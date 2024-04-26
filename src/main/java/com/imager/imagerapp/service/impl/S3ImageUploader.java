@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.*;
 import com.imager.imagerapp.exceptions.ImageUploadException;
 import com.imager.imagerapp.service.ImageUploader;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class S3ImageUploader implements ImageUploader {
 
     @Autowired
@@ -42,6 +44,7 @@ public class S3ImageUploader implements ImageUploader {
         try {
             PutObjectRequest request = new PutObjectRequest(bucketname, filename, image.getInputStream(), metadata);
             PutObjectResult result = client.putObject(request);
+            log.info("Upload successful");
             return this.preSignedUrl(filename);
         } catch (IOException e) {
             throw new ImageUploadException(e.getMessage());
@@ -68,6 +71,7 @@ public class S3ImageUploader implements ImageUploader {
             .withExpiration(exirationDate);
 
         URL url = client.generatePresignedUrl(generatePresignedUrlRequest);
+        log.info("Generated presigned url for " + filename + " " + url);
         return url.toString();
     }
 }
